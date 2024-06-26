@@ -38,6 +38,8 @@ def fetch_data(hours=1):
         "X-API-Token": os.getenv("API_TOKEN")
     }
 
+    logger.info(f"Fetching data from {url} with params {querystring} and headers {headers}")
+
     try:
         response = requests.get(url, headers=headers, params=querystring)
         response.raise_for_status()
@@ -76,9 +78,16 @@ def convert_to_dataframe(data):
 
 @app.get("/fetch_last_hour_data")
 def fetch_last_hour_data():
-    raw_data = fetch_data(hours=1)
-    df = convert_to_dataframe(raw_data)
-    return df.to_dict()
+    try:
+        raw_data = fetch_data(hours=1)
+        df = convert_to_dataframe(raw_data)
+        return df.to_dict()
+    except HTTPException as e:
+        logger.error(f"HTTPException occurred: {e.detail}")
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error occurred: {e}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error occurred: {e}")
 
 if __name__ == "__main__":
     import uvicorn
