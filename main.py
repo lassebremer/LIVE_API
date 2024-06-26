@@ -12,7 +12,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("FRONTEND_URL")],  # Setzen Sie Ihre Frontend-URL als Umgebungsvariable
+    allow_origins=['*'],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
