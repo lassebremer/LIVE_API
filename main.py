@@ -5,15 +5,19 @@ import pandas as pd
 import requests
 import os
 from dotenv import load_dotenv
+import logging
 
-load_dotenv()  # Laden der Umgebungsvariablen aus der .env-Datei
+load_dotenv()  # Load environment variables from .env file
 
 app = FastAPI()
 
-origins = os.getenv("CORS_ORIGINS", "*").split(",")
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=['*'],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -42,8 +46,10 @@ def fetch_data(hours=1):
             raise ValueError("The key 'measurements' is not in the JSON response.")
         return data
     except requests.RequestException as e:
+        logger.error(f"Request failed: {e}")
         raise HTTPException(status_code=500, detail=f"Request failed: {e}")
     except ValueError as e:
+        logger.error(f"Value error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 def convert_to_dataframe(data):
@@ -77,9 +83,3 @@ def fetch_last_hour_data():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
-
-import logging
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
